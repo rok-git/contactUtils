@@ -1,0 +1,7 @@
+.DS_Store
+/a.sh
+*.o
+*.swp
+*~
+/name2tel
+/tel2name

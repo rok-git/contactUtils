@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 {
     @autoreleasepool{
         NSString *name;
-        BOOL useID = NO, showNote = NO, idSearch = NO;
+        BOOL showID = NO, showNote = NO, idSearch = NO;
         char sw;
         char *me = argv[0];
         while((sw = getopt(argc, argv, "inI")) != -1){
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
                     // Show the identifier.  The identifier can be used 
                     // to open AddressBook.app (Contacts.app) as 
                     // "open addressbook://itendifier"
-                    useID = YES;
+                    showID = YES;
                     break;
                 case 'I':
                     // search identifier
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
             }else{
                 fullName = [NSString stringWithFormat: @"%@ %@", contact.familyName, contact.givenName];
             }
-            if(useID){
+            if(showID){
                 fullName = [NSString stringWithFormat: @"%@: [%@]: ", fullName, [contact.identifier stringByAddingPercentEncodingWithAllowedCharacters: NSCharacterSet.URLPathAllowedCharacterSet]];
             }else{
                 fullName = [fullName stringByAppendingString: @": "];

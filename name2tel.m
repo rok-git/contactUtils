@@ -7,7 +7,8 @@
 
 void usage(char * me)
 {
-    printf("Usage: %s [-i] name\n", me);
+    printf("Usage: %s [-i] [-m] [-n] name\n", me);
+    printf("Usage: %s -I [-i] [-m] [-n] id\n", me);
     exit(1);
 }
 
@@ -16,10 +17,10 @@ int main(int argc, char *argv[])
 {
     @autoreleasepool{
         NSString *name;
-        BOOL showID = NO, showNote = NO, idSearch = NO;
+        BOOL showID = NO, showNote = NO, idSearch = NO, showEmail = NO;
         char sw;
         char *me = argv[0];
-        while((sw = getopt(argc, argv, "inI")) != -1){
+        while((sw = getopt(argc, argv, "inIm")) != -1){
             switch(sw){
                 case 'i':
                     // Show the identifier.  The identifier can be used 
@@ -34,6 +35,10 @@ int main(int argc, char *argv[])
                 case 'n':
                     // Show the note.
                     showNote = YES;
+                    break;
+                case 'm':
+                    // Show Email addresses
+                    showEmail = YES;
                     break;
             }
         }
@@ -64,7 +69,13 @@ int main(int argc, char *argv[])
             predicate = [CNContact predicateForContactsMatchingName: name];
         }
         NSError *err;
-        NSArray *keys = @[CNContactPhoneNumbersKey, CNContactGivenNameKey, CNContactFamilyNameKey, CNContactOrganizationNameKey, CNContactIdentifierKey, CNContactNoteKey];
+        NSMutableArray *keys = [@[CNContactPhoneNumbersKey, CNContactGivenNameKey, CNContactFamilyNameKey, CNContactOrganizationNameKey] mutableCopy];
+        if(showID)
+            [keys addObject: CNContactIdentifierKey];
+        if(showNote)
+            [keys addObject: CNContactNoteKey];
+        if(showEmail)
+            [keys addObject: CNContactEmailAddressesKey];
         NSArray *contacts = [store unifiedContactsMatchingPredicate: predicate keysToFetch: keys error: &err];
 
 #ifdef DONT_SHOW_STDERR
@@ -81,6 +92,15 @@ int main(int argc, char *argv[])
                 fullName = [NSString stringWithFormat: @"%@ %@ (%@)", contact.familyName, contact.givenName, contact.organizationName];
             }else{
                 fullName = [NSString stringWithFormat: @"%@ %@", contact.familyName, contact.givenName];
+            }
+            if(showEmail){
+                if([contact.emailAddresses count]){
+                    NSMutableArray *addresses = [@[] mutableCopy];
+                    for(CNLabeledValue *em in contact.emailAddresses){
+                        [addresses addObject: [NSString stringWithFormat: @"<%@>", (NSString *)(em.value)]];
+                    }
+                    fullName = [NSString stringWithFormat: @"%@ %@", fullName, [addresses componentsJoinedByString: @", "]];
+                }
             }
             if(showID){
                 fullName = [NSString stringWithFormat: @"%@: [%@]: ", fullName, [contact.identifier stringByAddingPercentEncodingWithAllowedCharacters: NSCharacterSet.URLPathAllowedCharacterSet]];

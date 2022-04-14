@@ -2,13 +2,14 @@
 //      cc -framework Foundation -framework Contacts -fobjc-arc name2tel.m -o name2tel
 #import <Contacts/Contacts.h>
 #include <unistd.h>
+#include <libgen.h>
 
 #define DONT_SHOW_STDERR
 
 void usage(char * me)
 {
     printf("Usage: %s [-i] [-m] [-n] name\n", me);
-    printf("Usage: %s -I [-i] [-m] [-n] id\n", me);
+    printf("       %s -I [-i] [-m] [-n] id\n", me);
     exit(1);
 }
 
@@ -47,7 +48,7 @@ int main(int argc, char *argv[])
         if(argc != 0)
             name = [NSString stringWithUTF8String: argv[0]];
         else
-            usage(me);
+            usage(basename(me));
 
         if([CNContactStore authorizationStatusForEntityType: CNEntityTypeContacts] != CNAuthorizationStatusAuthorized){
             NSLog(@"%@", @"no authorization");

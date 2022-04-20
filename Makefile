@@ -6,7 +6,7 @@ LDFLAGS = $(FRAMEWORKS) -fobjc-arc
 #CFLAGS = -fobjc-arc -arch x86_64
 DISTDIR=/usr/local
 
-PROGRAMS = name2tel tel2name
+PROGRAMS = cnfind tel2name cn2vcf
 
 .PHONY: all clean install
 

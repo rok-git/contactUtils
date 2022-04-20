@@ -1,7 +1,9 @@
 .DS_Store
+/gomi
 /a.sh
 *.o
 *.swp
 *~
-/name2tel
+/cnfind
 /tel2name
+/cn2vcf

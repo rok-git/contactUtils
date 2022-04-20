@@ -1,5 +1,5 @@
 // Compile:
-//      cc -framework Foundation -framework Contacts -fobjc-arc name2tel.m -o name2tel
+//      cc -framework Foundation -framework Contacts -fobjc-arc cnfind.m -o cnfind
 #import <Contacts/Contacts.h>
 #include <unistd.h>
 #include <libgen.h>
@@ -8,8 +8,8 @@
 
 void usage(char * me)
 {
-    printf("Usage: %s [-i] [-m] [-n] name\n", me);
-    printf("       %s -I [-i] [-m] [-n] id\n", me);
+    printf("Usage: %s [-I|-M] [-i] [-m] [-n] name\n", me);
+    printf("       ('-I' and '-M' cannot be used at the same time)\n");
     exit(1);
 }
 
@@ -18,10 +18,10 @@ int main(int argc, char *argv[])
 {
     @autoreleasepool{
         NSString *name;
-        BOOL showID = NO, showNote = NO, idSearch = NO, showEmail = NO;
+        BOOL showID = NO, showNote = NO, idSearch = NO, emailSearch = NO, showEmail = NO;
         char sw;
         char *me = argv[0];
-        while((sw = getopt(argc, argv, "inIm")) != -1){
+        while((sw = getopt(argc, argv, "inImM")) != -1){
             switch(sw){
                 case 'i':
                     // Show the identifier.  The identifier can be used 
@@ -41,11 +41,15 @@ int main(int argc, char *argv[])
                     // Show Email addresses
                     showEmail = YES;
                     break;
+                case 'M':
+                    // search by email address
+                    emailSearch = YES;
+                    break;
             }
         }
         argc -= optind;
         argv += optind;
-        if(argc != 0)
+        if(argc != 0 && !(idSearch && emailSearch))
             name = [NSString stringWithUTF8String: argv[0]];
         else
             usage(basename(me));
@@ -66,6 +70,8 @@ int main(int argc, char *argv[])
         NSPredicate *predicate;
         if(idSearch){
             predicate = [CNContact predicateForContactsWithIdentifiers: @[name.stringByRemovingPercentEncoding]];
+        }else if(emailSearch){
+            predicate = [CNContact predicateForContactsMatchingEmailAddress: name];
         }else{
             predicate = [CNContact predicateForContactsMatchingName: name];
         }

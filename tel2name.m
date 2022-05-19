@@ -57,20 +57,17 @@ int main(int argc, char *argv[])
         NSFileHandle *stdOut = [NSFileHandle fileHandleWithStandardOutput];
         NSString *fullName;
         for(CNContact *contact in allContacts){
-            if([contact.organizationName length]){
-                fullName = [NSString stringWithFormat: @"%@ %@ (%@)", contact.familyName, contact.givenName, contact.organizationName];
-            }else{
-                fullName = [NSString stringWithFormat: @"%@ %@", contact.familyName, contact.givenName];
-            }
-            int c = 0;
-            BOOL matched = NO;
             for(CNLabeledValue *pn in contact.phoneNumbers){
                 NSString *phoneNumber = ((CNPhoneNumber *)(pn.value)).stringValue;
                 phoneNumber = [[phoneNumber componentsSeparatedByCharactersInSet: [NSCharacterSet characterSetWithCharactersInString: @" -()"]] componentsJoinedByString: @""]; 
                 if([phoneNumber containsString: num]){
+                    if([contact.organizationName length]){
+                        fullName = [NSString stringWithFormat: @"%@ %@ (%@)", contact.familyName, contact.givenName, contact.organizationName];
+                    }else{
+                        fullName = [NSString stringWithFormat: @"%@ %@", contact.familyName, contact.givenName];
+                    }
                     [stdOut writeData: [[NSString stringWithFormat: @"%@: %@\n", fullName, phoneNumber] dataUsingEncoding: NSUTF8StringEncoding] error: &err];
                 }
-                c++;
             }
         }
         return 0;

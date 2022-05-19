@@ -8,7 +8,7 @@
 
 void usage(char * me)
 {
-    printf("Usage: %s [-I|-M] [-i] [-m] [-n] name\n", me);
+    printf("Usage: %s [-I|-M] [-a] [-i] [-j] [-m] [-n] name\n", me);
     printf("       ('-I' and '-M' cannot be used at the same time)\n");
     exit(1);
 }
@@ -18,11 +18,14 @@ int main(int argc, char *argv[])
 {
     @autoreleasepool{
         NSString *name;
-        BOOL showID = NO, showNote = NO, idSearch = NO, emailSearch = NO, showEmail = NO;
+        BOOL jsonOutput = NO, showAddress = NO, showID = NO, showNote = NO, idSearch = NO, emailSearch = NO, showEmail = NO;
         char sw;
         char *me = argv[0];
-        while((sw = getopt(argc, argv, "inImM")) != -1){
+        while((sw = getopt(argc, argv, "aijnImM")) != -1){
             switch(sw){
+                case 'a':
+                    showAddress = YES;
+                    break;
                 case 'i':
                     // Show the identifier.  The identifier can be used 
                     // to open AddressBook.app (Contacts.app) as 
@@ -30,15 +33,20 @@ int main(int argc, char *argv[])
                     showID = YES;
                     break;
                 case 'I':
-                    // search identifier
+                    // search by identifier
                     idSearch = YES;
+                    break;
+                case 'j':
+                    // output result in JSON
+                    jsonOutput = YES;
+                    NSLog(@"JSON is not yet supported.");
                     break;
                 case 'n':
                     // Show the note.
                     showNote = YES;
                     break;
                 case 'm':
-                    // Show Email addresses
+                    // Show email addresses
                     showEmail = YES;
                     break;
                 case 'M':
@@ -49,6 +57,7 @@ int main(int argc, char *argv[])
         }
         argc -= optind;
         argv += optind;
+        // Only one argument is used.
         if(argc != 0 && !(idSearch && emailSearch))
             name = [NSString stringWithUTF8String: argv[0]];
         else
@@ -59,7 +68,7 @@ int main(int argc, char *argv[])
         }
 
 #ifdef DONT_SHOW_STDERR
-        // something send err message to stderr, so ignore it...
+        // something sends an error message to stderr, so ignore it...
         int fdx = dup(STDERR_FILENO);
         close(STDERR_FILENO);
         int fd = open("/dev/null", O_WRONLY);
@@ -77,6 +86,8 @@ int main(int argc, char *argv[])
         }
         NSError *err;
         NSMutableArray *keys = [@[CNContactPhoneNumbersKey, CNContactGivenNameKey, CNContactFamilyNameKey, CNContactOrganizationNameKey] mutableCopy];
+        if(showAddress)
+            [keys addObject: CNContactPostalAddressesKey];
         if(showID)
             [keys addObject: CNContactIdentifierKey];
         if(showNote)
@@ -100,14 +111,12 @@ int main(int argc, char *argv[])
             }else{
                 fullName = [NSString stringWithFormat: @"%@ %@", contact.familyName, contact.givenName];
             }
-            if(showEmail){
-                if([contact.emailAddresses count]){
-                    NSMutableArray *addresses = [@[] mutableCopy];
-                    for(CNLabeledValue *em in contact.emailAddresses){
-                        [addresses addObject: [NSString stringWithFormat: @"<%@>", (NSString *)(em.value)]];
-                    }
-                    fullName = [NSString stringWithFormat: @"%@ %@", fullName, [addresses componentsJoinedByString: @", "]];
+            if(showEmail && [contact.emailAddresses count]){
+                NSMutableArray *addresses = [@[] mutableCopy];
+                for(CNLabeledValue *em in contact.emailAddresses){
+                    [addresses addObject: [NSString stringWithFormat: @"<%@>", (NSString *)(em.value)]];
                 }
+                fullName = [NSString stringWithFormat: @"%@ %@", fullName, [addresses componentsJoinedByString: @", "]];
             }
             if(showID){
                 fullName = [NSString stringWithFormat: @"%@: [%@]: ", fullName, [contact.identifier stringByAddingPercentEncodingWithAllowedCharacters: NSCharacterSet.URLPathAllowedCharacterSet]];
@@ -124,9 +133,20 @@ int main(int argc, char *argv[])
                 c++;
             }
             [stdOut writeData: [@"\n" dataUsingEncoding: NSUTF8StringEncoding] error: &err];
+            if(showAddress && ([contact.postalAddresses count])){
+                NSMutableArray *addresses = [@[] mutableCopy];
+                for(CNLabeledValue<CNPostalAddress *> *adr in contact.postalAddresses){
+                    [stdOut writeData: [@"Address:\n" dataUsingEncoding: NSUTF8StringEncoding]];
+                    NSString *adrStr = [NSString stringWithFormat: @"\t%@\n\t%@ %@\n\t%@", adr.value.street, adr.value.city, adr.value.state, adr.value.postalCode];
+                    if(adr.value.country)
+                        adrStr = [NSString stringWithFormat: @"%@ %@", adrStr, adr.value.country];
+                    [stdOut writeData: [adrStr dataUsingEncoding: NSUTF8StringEncoding] error: &err];
+                    [stdOut writeData: [@"\n" dataUsingEncoding: NSUTF8StringEncoding] error: &err];
+                }
+            }
             if(showNote && ([contact.note length])){
                 NSString *note = [contact.note stringByReplacingOccurrencesOfString: @"\n" withString: @"\n        "];
-                [stdOut writeData: [[NSString stringWithFormat: @"    Note:\n        %@\n", note] dataUsingEncoding: NSUTF8StringEncoding] error: &err];
+                [stdOut writeData: [[NSString stringWithFormat: @"Note:\t\n        %@\n", note] dataUsingEncoding: NSUTF8StringEncoding] error: &err];
             }
         }
         return 0;

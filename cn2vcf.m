@@ -1,5 +1,5 @@
 // Compile:
-//      cc -framework Foundation -framework Contacts -fobjc-arc cn2vcf.m -o cn2vcf.m 
+//      cc -framework Foundation -framework Contacts -fobjc-arc cn2vcf.m -o cn2vcf
 #import <Contacts/Contacts.h>
 #include <unistd.h>
 #include <libgen.h>
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
         dup2(fd, STDERR_FILENO);
 #endif
 
-        NSError *err;
+        NSError *err = nil;
         NSArray *contacts;
         NSArray *keys = @[[CNContactVCardSerialization descriptorForRequiredKeys]];
         CNContactStore *store = [[CNContactStore alloc] init];
@@ -70,6 +70,8 @@ int main(int argc, char *argv[])
             else
                 predicate = [CNContact predicateForContactsMatchingName: name];
             contacts = [store unifiedContactsMatchingPredicate: predicate keysToFetch: keys error: &err];
+            if(err)
+                return 1;
         }else{ // show all
             CNContactFetchRequest *request = [[CNContactFetchRequest alloc] initWithKeysToFetch: keys];
             __block NSMutableArray *allContacts = [@[] mutableCopy];
@@ -83,8 +85,6 @@ int main(int argc, char *argv[])
                 return 1;
             contacts = [allContacts copy];
         }
-        if(err)
-            return 1;
 
 #ifdef DONT_SHOW_STDERR
         dup2(fdx, STDERR_FILENO);

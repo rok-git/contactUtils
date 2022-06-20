@@ -53,6 +53,9 @@ int main(int argc, char *argv[])
                     // search by email address
                     emailSearch = YES;
                     break;
+                default:
+                    usage(me);
+                    break;
             }
         }
         argc -= optind;

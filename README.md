@@ -28,11 +28,11 @@ To search for telephone numbers, just use `cnfind name`.  Name can be matched wi
 
 For example, `cnfind John` returns John's name, organaization and phone numbers.
 
-'-I' or '-M' option makes it possible to search for contacts by an identifier or an email address as search key (an identifier or email address must match exactly.).
+'-I' or '-M' option makes it possible to search for contacts by an identifier or an email address as a search key (an identifier or an email address must match exactly.).
 
 '-a', '-i', '-m' and '-n' specify to show postal addresses, IDs, email address(es) and notes respectively.  You can use the ID as a search key with a '-I' option and also you may open Contacts.app by "open addressbook://ID"
 
-With `tel2name`, you can search for contacts using a phone number as search key.  There's no option to show other information than the name and number, you must search by `cnfind` with that name (of course you can use -a, -i, -m and -n along with `cnfind`) to know other information.
+With `tel2name`, you can search for contacts using a phone number as a search key.  There's no option to show other information than the name and number, you must search by `cnfind` with that name (of course you can use -a, -i, -m and -n along with `cnfind`) to know other information.
 
 Example:
 > `tel2name 0XX-XXX-XXXX`

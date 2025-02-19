@@ -24,13 +24,13 @@ Just type `make` in tha directory that is containing source code.  If you want t
 
 To search for telephone numbers, just use `cnfind name`.  Name can be matched with the first name, the last name, the organization name, the nickname and so on.
 
->`cnfind [-I|-M] [-a] [-i] [-m] [-n] name`
+>`cnfind [-I|-M] [-a] [-i] [-m] name`
 
 For example, `cnfind John` returns John's name, organaization and phone numbers.
 
 '-I' or '-M' option makes it possible to search for contacts by an identifier or an email address as a search key (an identifier or an email address must match exactly.).
 
-'-a', '-i', '-m' and '-n' specify to show postal addresses, IDs, email address(es) and notes respectively.  You can use the ID as a search key with a '-I' option and also you may open Contacts.app by "open addressbook://ID"
+'-a', '-i' and '-m'  specify to show postal addresses, IDs, email address(es)  respectively.  You can use the ID as a search key with a '-I' option and also you may open Contacts.app by "open addressbook://ID"
 
 With `tel2name`, you can search for contacts using a phone number as a search key.  There's no option to show other information than the name and number, you must search by `cnfind` with that name (of course you can use -a, -i, -m and -n along with `cnfind`) to know other information.
 

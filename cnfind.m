@@ -93,8 +93,10 @@ int main(int argc, char *argv[])
             [keys addObject: CNContactPostalAddressesKey];
         if(showID)
             [keys addObject: CNContactIdentifierKey];
-        if(showNote)
-            [keys addObject: CNContactNoteKey];
+        if(showNote){
+        //    [keys addObject: CNContactNoteKey];
+            fprintf(stderr, "-n option (show note field) is no logner supported.\n");
+        }
         if(showEmail)
             [keys addObject: CNContactEmailAddressesKey];
         NSArray *contacts = [store unifiedContactsMatchingPredicate: predicate keysToFetch: keys error: &err];

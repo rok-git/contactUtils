@@ -93,10 +93,16 @@ int main(int argc, char *argv[])
             [keys addObject: CNContactPostalAddressesKey];
         if(showID)
             [keys addObject: CNContactIdentifierKey];
+/*
         if(showNote){
-        //    [keys addObject: CNContactNoteKey];
+            // This part is no longer needed.
+//            [keys addObject: CNContactNoteKey];
+            // Using AppleScript to communicate with Contacts.app makes it
+            // possible to get note.
+            // *** VERY SLOW... ***
             fprintf(stderr, "-n option (show note field) is no logner supported.\n");
         }
+*/
         if(showEmail)
             [keys addObject: CNContactEmailAddressesKey];
         NSArray *contacts = [store unifiedContactsMatchingPredicate: predicate keysToFetch: keys error: &err];
@@ -149,9 +155,27 @@ int main(int argc, char *argv[])
                     [stdOut writeData: [@"\n" dataUsingEncoding: NSUTF8StringEncoding] error: &err];
                 }
             }
+/*
             if(showNote && ([contact.note length])){
                 NSString *note = [contact.note stringByReplacingOccurrencesOfString: @"\n" withString: @"\n        "];
                 [stdOut writeData: [[NSString stringWithFormat: @"Note:\t\n        %@\n", note] dataUsingEncoding: NSUTF8StringEncoding] error: &err];
+            }
+*/
+            if(showNote){
+                NSString *idString = contact.identifier;
+                NSString *scriptTmpl = @"tell application \"Contacts\"\n"
+                   "    set p to item 1 of (every person whose id = \"%@\")\n"
+                   "    get note of p\n"
+                   "end tell";
+                NSString *script = [NSString stringWithFormat:scriptTmpl,idString];
+                NSAppleScript *applescript = [[NSAppleScript alloc] initWithSource: script];
+                if(!applescript){
+                    return 1;
+                }
+                NSDictionary *noteErr = nil;
+                NSAppleEventDescriptor * result = [applescript executeAndReturnError: &noteErr];
+                if(!noteErr)
+                    [stdOut writeData: [[NSString stringWithFormat: @"Note:\t\n\t%@\n", [result stringValue]] dataUsingEncoding: NSUTF8StringEncoding] error: &err];
             }
         }
         return 0;
